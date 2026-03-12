@@ -1165,8 +1165,6 @@
     const isCollapsed = content.classList.contains('collapsed');
 
     if (isCollapsed) {
-      content.classList.remove('collapsed');
-      header.classList.remove('collapsed');
       setActiveSection(sectionId);
     } else {
       content.classList.add('collapsed');
@@ -1177,21 +1175,24 @@
   function setActiveSection(sectionId) {
     activeSectionId = sectionId;
 
+    // Collapse all other sections, open the active one
     document.querySelectorAll('.section-wrapper').forEach(wrapper => {
       const id = wrapper.dataset.section;
+      const wContent = document.getElementById('content-' + id);
+      const wHeader = wContent.previousElementSibling;
       wrapper.classList.toggle('dimmed', id !== sectionId);
+      if (id !== sectionId) {
+        wContent.classList.add('collapsed');
+        wHeader.classList.add('collapsed');
+      } else {
+        wContent.classList.remove('collapsed');
+        wHeader.classList.remove('collapsed');
+      }
     });
 
     document.querySelectorAll('.step-group-header').forEach(h => h.classList.remove('active'));
     const group = document.querySelector(`.step-group[data-section="${sectionId}"]`);
     if (group) group.querySelector('.step-group-header').classList.add('active');
-
-    const content = document.getElementById('content-' + sectionId);
-    const header = content.previousElementSibling;
-    if (content.classList.contains('collapsed')) {
-      content.classList.remove('collapsed');
-      header.classList.remove('collapsed');
-    }
   }
 
   function navigateSection(sectionId) {
