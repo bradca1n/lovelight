@@ -161,19 +161,16 @@
   .section-block {
     background: var(--surface);
     margin: 0;
-    margin-bottom: 70px;
     border-bottom: 1px solid var(--border);
   }
   .section-content-inner {
     transition: opacity var(--transition);
   }
-  .section-wrapper.dimmed .section-content-inner,
-  .section-wrapper.dimmed .section-header {
-    opacity: 0.2;
+  .section-wrapper.dimmed .section-content-inner {
+    opacity: 0.4;
   }
-  .section-wrapper.dimmed:hover .section-content-inner,
-  .section-wrapper.dimmed:hover .section-header {
-    opacity: 0.5;
+  .section-wrapper.dimmed:hover .section-content-inner {
+    opacity: 0.7;
   }
 
   .section-header {
@@ -202,6 +199,12 @@
 
   .section-content {
     padding: 0 28px 28px;
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, padding 0.3s ease;
+    max-height: 4000px; opacity: 1;
+  }
+  .section-content.collapsed {
+    max-height: 0; opacity: 0; padding-top: 0; padding-bottom: 0;
   }
 
   /* ─── Subsection ─── */
@@ -543,8 +546,9 @@
     <!-- ═══ PO Details Section ═══ -->
     <div class="section-wrapper" id="section-po-details" data-section="po-details">
       <div class="section-block">
-        <div class="section-header" onclick="setActiveSection('po-details')">
+        <div class="section-header" onclick="toggleSection('po-details')">
           <h2>PO Details</h2>
+          <svg class="section-chevron" viewBox="0 0 20 20" fill="currentColor"><path d="M6 8l4 4 4-4"/></svg>
         </div>
         <div class="section-content" id="content-po-details">
           <div class="section-content-inner">
@@ -742,10 +746,11 @@
     <!-- ═══ Site Details Section ═══ -->
     <div class="section-wrapper dimmed" id="section-site-details" data-section="site-details">
       <div class="section-block">
-        <div class="section-header" onclick="setActiveSection('site-details')">
+        <div class="section-header" onclick="toggleSection('site-details')">
           <h2>Site Details</h2>
+          <svg class="section-chevron" viewBox="0 0 20 20" fill="currentColor"><path d="M6 8l4 4 4-4"/></svg>
         </div>
-        <div class="section-content" id="content-site-details">
+        <div class="section-content collapsed" id="content-site-details">
           <div class="section-content-inner">
 
           <!-- Site Address -->
@@ -887,10 +892,11 @@
     <!-- ═══ Billing Details Section ═══ -->
     <div class="section-wrapper dimmed" id="section-billing-details" data-section="billing-details">
       <div class="section-block">
-        <div class="section-header" onclick="setActiveSection('billing-details')">
+        <div class="section-header" onclick="toggleSection('billing-details')">
           <h2>Billing Details</h2>
+          <svg class="section-chevron" viewBox="0 0 20 20" fill="currentColor"><path d="M6 8l4 4 4-4"/></svg>
         </div>
-        <div class="section-content" id="content-billing-details">
+        <div class="section-content collapsed" id="content-billing-details">
           <div class="section-content-inner">
 
           <!-- Invoice Terms -->
@@ -1153,12 +1159,35 @@
   // ═══════════════════════════════════════
   let activeSectionId = 'po-details';
 
+  function toggleSection(sectionId) {
+    const content = document.getElementById('content-' + sectionId);
+    const header = content.previousElementSibling;
+    const isCollapsed = content.classList.contains('collapsed');
+
+    if (isCollapsed) {
+      setActiveSection(sectionId);
+    } else {
+      content.classList.add('collapsed');
+      header.classList.add('collapsed');
+    }
+  }
+
   function setActiveSection(sectionId) {
     activeSectionId = sectionId;
 
+    // Collapse all other sections, open the active one
     document.querySelectorAll('.section-wrapper').forEach(wrapper => {
       const id = wrapper.dataset.section;
+      const wContent = document.getElementById('content-' + id);
+      const wHeader = wContent.previousElementSibling;
       wrapper.classList.toggle('dimmed', id !== sectionId);
+      if (id !== sectionId) {
+        wContent.classList.add('collapsed');
+        wHeader.classList.add('collapsed');
+      } else {
+        wContent.classList.remove('collapsed');
+        wHeader.classList.remove('collapsed');
+      }
     });
 
     document.querySelectorAll('.step-group-header').forEach(h => h.classList.remove('active'));
