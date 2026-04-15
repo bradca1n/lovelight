@@ -40,3 +40,31 @@ Skills MUST be invoked via the `Skill` tool — not described in text. Describin
 Skill("brainstorming") → Skill("writing-plans") → Skill("frontend-design") →
   Skill("implement-design") → Skill("verification-before-completion")
 ```
+
+## ⛔ Figma Design Rules — Mandatory Checks
+
+**NEVER present Figma design work as complete without passing ALL of these checks.**
+
+### Pre-build: Resolve before creating nodes
+1. **Fetch variables first** — call `figma_get_variables` to get Semantic + Fixed collection variable IDs. Build a lookup map before creating any nodes.
+2. **Check available fonts** — scan existing text nodes for `fontName`. Only use confirmed font family + style combinations. Available: Inter Regular, Inter Medium, Serrif Condensed Light. Never assume other styles exist.
+3. **Check available text styles** — load via `figma.getLocalTextStylesAsync()`. All text must use styles named `Text-{weight}/{size}` (e.g. `Text-semibold/2xl`, `Text-normal/xs`).
+4. **Search for components** — call `figma_search_components` before building any UI element. Use component instances for buttons, inputs, selects, toggles, icons — never raw frames.
+
+### During build: Bind everything to tokens
+- **Colors** → `figma.variables.setBoundVariableForPaint()` — never raw hex values
+- **Spacing** → `setBoundVariable('itemSpacing', spaceVar)` — never empty spacer frames
+- **Radius** → `setBoundVariable('topLeftRadius', radiusVar)` etc. — never raw px values
+- **Text** → `node.setTextStyleIdAsync(styleId)` — never raw fontSize/fontName/lineHeight
+- Structure every `figma_execute` as: resolve IDs → create nodes → bind in same pass
+
+### Post-build: Verify before claiming done
+Run these scans via `figma_execute` BEFORE every completion claim:
+1. **Tokens audit** — scan all nodes for hardcoded fills, strokes, spacing, radius. Zero tolerance for unbound values.
+2. **Font audit** — scan all text nodes for font family + style. Flag anything not in the approved list.
+3. **Text style audit** — verify all text nodes are linked to a Figma text style, not raw properties.
+4. **Component audit** — flag raw frames that should be component instances.
+5. **Component internals** — after setting instances to FILL, verify child sizing wasn't broken (e.g. chevron icons inside selects should stay FIXED).
+
+### On code-to-Figma import
+After any import, run a component audit pass — match elements to existing components, swap instances, and flag new components that need to be created.
